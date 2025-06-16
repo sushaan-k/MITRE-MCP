@@ -1,4 +1,6 @@
-# MCP Agentic AI Framework for MITRE ATT&CK Mapping
+# MITRE-MCP
+
+## MCP Agentic AI Framework for MITRE ATT&CK Mapping
 
 This project implements a Model Context Protocol (MCP) framework for an Agentic AI system that maps cyber threats to the MITRE ATT&CK framework.
 
@@ -43,3 +45,4 @@ The system provides MCP tools that AI agents can use to:
 - Map threats to MITRE ATT&CK framework
 - Generate threat assessment reports
 - Query historical threat data
+# MITRE-MCP
