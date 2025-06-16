@@ -1,0 +1,66 @@
+{
+  "name": "mitre-mcp",
+  "version": "1.0.0",
+  "description": "AI-powered threat intelligence analysis with automated MITRE ATT&CK mapping for cybersecurity teams and AI agents",
+  "main": "index.js",
+  "bin": {
+    "mitre-mcp": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js start",
+    "build": "echo 'Build complete - NPX package ready'",
+    "postinstall": "npm run setup:python",
+    "setup:python": "python3 --version && pip3 install -r requirements.txt",
+    "test": "python3 production_tests.py",
+    "dev": "node index.js start",
+    "prepare": "echo 'Package prepared for NPX'"
+  },
+  "keywords": [
+    "mcp",
+    "cybersecurity",
+    "threat-intelligence",
+    "mitre-attack",
+    "ai-agents",
+    "security-analysis",
+    "model-context-protocol"
+  ],
+  "author": "AI Security Framework Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sushaan-k/MITRE-MCP.git"
+  },
+  "homepage": "https://github.com/sushaan-k/MITRE-MCP#readme",
+  "bugs": {
+    "url": "https://github.com/sushaan-k/MITRE-MCP/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "python": ">=3.8.0"
+  },
+  "files": [
+    "dist/",
+    "src/",
+    "data/",
+    "templates/",
+    "requirements.txt",
+    "mcp.json",
+    "README.md",
+    "setup.py"
+  ],
+  "mcp": {
+    "version": "1.0",
+    "protocol": "stdio",
+    "server": {
+      "command": "python3",
+      "args": ["src/mcp_server.py"],
+      "transport": "stdio"
+    }
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "python3": ">=3.8.0"
+  },
+  "devDependencies": {},
+  "preferGlobal": true
+}
