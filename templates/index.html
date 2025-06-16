@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Threat Intelligence - Agentic AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        textarea:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .results.show {
+            display: block;
+        }
+        
+        .results h3 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-section h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .severity {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .severity.low { background: #c6f6d5; color: #276749; }
+        .severity.medium { background: #fef5e7; color: #b7791f; }
+        .severity.high { background: #fed7d7; color: #c53030; }
+        .severity.critical { background: #feb2b2; color: #822727; }
+        
+        .indicator {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .mapping {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #48bb78, #68d391);
+            transition: width 0.3s ease;
+        }
+        
+        .recommendations {
+            background: #edf2f7;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .recommendations ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .recommendations li {
+            background: white;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ MCP Threat Intelligence</h1>
+            <p>Agentic AI system for mapping cyber threats to MITRE ATT&CK framework</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="card">
+                <h2>🔍 Threat Analysis</h2>
+                <form id="analysisForm">
+                    <div class="form-group">
+                        <label for="threatContent">Threat Intelligence Report:</label>
+                        <textarea 
+                            id="threatContent" 
+                            placeholder="Paste your threat intelligence report here. Include IOCs, attack descriptions, and any relevant technical details..."
+                            required
+                        ></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="source">Source (Optional):</label>
+                        <input type="text" id="source" placeholder="e.g., Security Team, Threat Feed, OSINT">
+                    </div>
+                    <button type="submit" class="btn" id="analyzeBtn">🔬 Analyze Threat</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2>🔎 MITRE ATT&CK Search</h2>
+                <form id="searchForm">
+                    <div class="form-group">
+                        <label for="keywords">Keywords (comma-separated):</label>
+                        <input 
+                            type="text" 
+                            id="keywords" 
+                            placeholder="e.g., phishing, malware, powershell, injection"
+                            required
+                        >
+                    </div>
+                    <div class="form-group">
+                        <label for="confidence">Minimum Confidence:</label>
+                        <input type="range" id="confidence" min="0" max="1" step="0.1" value="0.3">
+                        <span id="confidenceValue">0.3</span>
+                    </div>
+                    <button type="submit" class="btn" id="searchBtn">🔍 Search Techniques</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing your request...</p>
+            </div>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Update confidence value display
+        document.getElementById('confidence').addEventListener('input', function() {
+            document.getElementById('confidenceValue').textContent = this.value;
+        });
+
+        // Handle threat analysis form
+        document.getElementById('analysisForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const content = document.getElementById('threatContent').value;
+            const source = document.getElementById('source').value || 'Web Interface';
+            
+            if (!content.trim()) {
+                alert('Please enter threat intelligence content');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        source: source
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayAnalysisResults(data);
+                } else {
+                    throw new Error(data.detail || 'Analysis failed');
+                }
+            } catch (error) {
+                showError('Analysis failed: ' + error.message);
+            }
+        });
+
+        // Handle search form
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const keywords = document.getElementById('keywords').value.split(',').map(k => k.trim());
+            const minConfidence = parseFloat(document.getElementById('confidence').value);
+            
+            if (keywords.length === 0 || keywords[0] === '') {
+                alert('Please enter keywords');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/search/techniques', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        keywords: keywords,
+                        min_confidence: minConfidence
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displaySearchResults(data);
+                } else {
+                    throw new Error(data.detail || 'Search failed');
+                }
+            } catch (error) {
+                showError('Search failed: ' + error.message);
+            }
+        });
+
+        function showLoading() {
+            const results = document.getElementById('results');
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('resultsContent');
+            
+            results.classList.add('show');
+            loading.style.display = 'block';
+            content.innerHTML = '';
+            
+            // Scroll to results
+            results.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showError(message) {
+            hideLoading();
+            document.getElementById('resultsContent').innerHTML = `
+                <div class="result-section" style="border-left-color: #e53e3e;">
+                    <h4>❌ Error</h4>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function displayAnalysisResults(data) {
+            hideLoading();
+            
+            const indicatorsHtml = data.report.indicators.map(ind => `
+                <div class="indicator">
+                    <strong>${ind.type.toUpperCase()}:</strong> ${ind.value}
+                    <span class="severity ${ind.severity}">${ind.severity}</span>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${ind.confidence * 100}%"></div>
+                    </div>
+                    <small>Confidence: ${Math.round(ind.confidence * 100)}%</small>
+                </div>
+            `).join('');
+            
+            const mappingsHtml = data.mitre_mappings.map(mapping => `
+                <div class="mapping">
+                    <h5>${mapping.technique_id} → ${mapping.tactic_id}</h5>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${mapping.confidence * 100}%"></div>
+                    </div>
+                    <small>Confidence: ${Math.round(mapping.confidence * 100)}%</small>
+                    ${mapping.evidence.length > 0 ? `
+                        <div style="margin-top: 10px;">
+                            <strong>Evidence:</strong>
+                            <ul style="margin-left: 20px;">
+                                ${mapping.evidence.map(e => `<li>${e}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+            
+            const recommendationsHtml = data.recommendations.map(rec => `<li>${rec}</li>`).join('');
+            
+            document.getElementById('resultsContent').innerHTML = `
+                <h3>📊 Threat Analysis Results</h3>
+                
+                <div class="result-section">
+                    <h4>📋 Report Summary</h4>
+                    <p><strong>Title:</strong> ${data.report.title}</p>
+                    <p><strong>Severity:</strong> <span class="severity ${data.report.severity}">${data.report.severity}</span></p>
+                    <p><strong>Risk Score:</strong> ${data.risk_score.toFixed(1)}/10</p>
+                    <p><strong>Indicators Found:</strong> ${data.report.indicators.length}</p>
+                    <p><strong>MITRE Mappings:</strong> ${data.mitre_mappings.length}</p>
+                </div>
+                
+                <div class="result-section">
+                    <h4>🎯 Threat Indicators</h4>
+                    ${indicatorsHtml || '<p>No indicators found</p>'}
+                </div>
+                
+                <div class="result-section">
+                    <h4>🗺️ MITRE ATT&CK Mappings</h4>
+                    ${mappingsHtml || '<p>No mappings found</p>'}
+                </div>
+                
+                <div class="recommendations">
+                    <h4>💡 Security Recommendations</h4>
+                    <ul>${recommendationsHtml}</ul>
+                </div>
+            `;
+        }
+
+        function displaySearchResults(data) {
+            hideLoading();
+            
+            const resultsHtml = data.results.map(result => `
+                <div class="mapping">
+                    <h5>${result.technique_id}: ${result.name}</h5>
+                    <p>${result.description}</p>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" style="width: ${result.confidence * 100}%"></div>
+                    </div>
+                    <small>Confidence: ${Math.round(result.confidence * 100)}%</small>
+                    <p><strong>Tactics:</strong> ${result.tactic_names.join(', ')}</p>
+                    <p><strong>Platforms:</strong> ${result.platforms.join(', ')}</p>
+                </div>
+            `).join('');
+            
+            document.getElementById('resultsContent').innerHTML = `
+                <h3>🔍 Search Results</h3>
+                
+                <div class="result-section">
+                    <h4>📊 Search Summary</h4>
+                    <p><strong>Keywords:</strong> ${data.keywords.join(', ')}</p>
+                    <p><strong>Results Found:</strong> ${data.results_count}</p>
+                    <p><strong>Min Confidence:</strong> ${data.min_confidence}</p>
+                </div>
+                
+                <div class="result-section">
+                    <h4>🎯 Matching Techniques</h4>
+                    ${resultsHtml || '<p>No techniques found matching your criteria</p>'}
+                </div>
+            `;
+        }
+
+        // Add sample data button for demo
+        function loadSampleThreat() {
+            document.getElementById('threatContent').value = `
+THREAT INTELLIGENCE REPORT
+
+Title: APT29 Phishing Campaign Targeting Government Entities
+
+Description: Our security team has identified a sophisticated phishing campaign attributed to APT29 (Cozy Bear) targeting government entities. The campaign utilizes spear-phishing emails with malicious attachments containing PowerShell scripts.
+
+Indicators of Compromise (IOCs):
+- Email: cozy-updates@gov-secure[.]com
+- Domain: gov-secure[.]com
+- IP Address: 185.234.72.45
+- File Hash (SHA256): 4f2d8b2c1a3e5d6f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f
+- Command: powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden
+
+Attack Details:
+The malicious emails contain PDF attachments that exploit a vulnerability to execute PowerShell commands. The PowerShell script establishes persistence through scheduled tasks and attempts to collect credentials using mimikatz-like techniques. The malware also performs system reconnaissance to gather information about the target environment.
+
+Detection:
+- Unusual PowerShell execution with bypass parameters
+- Outbound connections to suspicious domains
+- Creation of unauthorized scheduled tasks
+- Access to LSASS memory dumps
+
+Recommendation: Immediate blocking of identified IOCs and enhanced monitoring for PowerShell execution.
+            `.trim();
+        }
+
+        // Add sample button
+        document.querySelector('.card h2').innerHTML += ' <button onclick="loadSampleThreat()" style="font-size: 12px; padding: 5px 10px; margin-left: 10px; background: #48bb78; color: white; border: none; border-radius: 4px; cursor: pointer;">📝 Load Sample</button>';
+    </script>
+</body>
+</html>
