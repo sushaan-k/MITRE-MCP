@@ -44,12 +44,12 @@ RUN python -c "from src.mitre_attack import MitreAttackFramework; MitreAttackFra
 # Expose ports
 EXPOSE 3000 8000
 
-# Health check
+# Health check for HTTP MCP endpoint
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# Default command
-CMD ["python", "src/web_interface.py"]
+# Default command for Smithery HTTP deployment
+CMD ["python", "src/mcp_server_http.py"]
 
 # Labels for metadata
 LABEL maintainer="AI Security Framework Team <security@ai-framework.org>" \
