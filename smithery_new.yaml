@@ -1,0 +1,16 @@
+runtime: "npm"
+startCommand:
+  type: "stdio"
+  command: "npx"
+  args: ["mitre-mcp", "start"]
+configSchema:
+  type: "object"
+  properties:
+    logLevel:
+      type: "string"
+      description: "Logging level"
+      enum: ["DEBUG", "INFO", "WARNING", "ERROR"]
+      default: "INFO"
+  required: []
+exampleConfig:
+  logLevel: "INFO"

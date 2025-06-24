@@ -1,0 +1,17 @@
+Dockerfile
+docker-compose.yml
+*.md
+__pycache__/
+.git/
+.DS_Store
+logs/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.env.local
+*.tmp
+*.temp
