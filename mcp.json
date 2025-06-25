@@ -14,7 +14,7 @@
     "protocol": "stdio",
     "server": {
       "command": "python3",
-      "args": ["mcp_server.py"],
+      "args": ["simple_mcp_server.py"],
       "transport": "stdio"
     },
     "configSchema": {
