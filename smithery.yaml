@@ -4,4 +4,4 @@ description: Threat intelligence framework with MITRE ATT&CK mapping
 
 server:
   command: python
-  args: ["simple_mcp_server.py"]
+  args: ["mcp_server.py"]

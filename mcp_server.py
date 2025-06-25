@@ -6,14 +6,26 @@ import sys
 import logging
 from typing import Any, Dict, List
 
-from threat_analyzer import ThreatAnalyzer
-from mitre_attack import MitreAttackFramework
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("mcp-server")
 
-threat_analyzer = ThreatAnalyzer()
-mitre_framework = MitreAttackFramework()
+# Initialize components lazily to avoid startup timeouts
+threat_analyzer = None
+mitre_framework = None
+
+def get_threat_analyzer():
+    global threat_analyzer
+    if threat_analyzer is None:
+        from threat_analyzer import ThreatAnalyzer
+        threat_analyzer = ThreatAnalyzer()
+    return threat_analyzer
+
+def get_mitre_framework():
+    global mitre_framework
+    if mitre_framework is None:
+        from mitre_attack import MitreAttackFramework
+        mitre_framework = MitreAttackFramework()
+    return mitre_framework
 
 
 class MCPServer:
@@ -128,7 +140,8 @@ class MCPServer:
             return {"success": False, "error": "Empty content provided for analysis"}
         
         # Perform threat analysis
-        analysis = threat_analyzer.analyze_threat_report(content, source)
+        analyzer = get_threat_analyzer()
+        analysis = analyzer.analyze_threat_report(content, source)
         
         # Format results
         result = {
@@ -173,7 +186,8 @@ class MCPServer:
             return {"success": False, "error": "No keywords provided for search"}
         
         # Search techniques
-        technique_matches = mitre_framework.search_techniques_by_keywords(keywords)
+        framework = get_mitre_framework()
+        technique_matches = framework.search_techniques_by_keywords(keywords)
         
         # Filter by minimum confidence
         filtered_matches = [(tech, conf) for tech, conf in technique_matches if conf >= min_confidence]
@@ -205,13 +219,14 @@ class MCPServer:
         if not tactic_id:
             return {"success": False, "error": "No tactic_id provided"}
         
-        tactic = mitre_framework.get_tactic_by_id(tactic_id)
-        
+        framework = get_mitre_framework()
+        tactic = framework.get_tactic_by_id(tactic_id)
+
         if not tactic:
             return {"success": False, "error": f"Tactic {tactic_id} not found"}
-        
+
         # Get associated techniques
-        techniques = mitre_framework.get_techniques_by_tactic(tactic_id)
+        techniques = framework.get_techniques_by_tactic(tactic_id)
         
         result = {
             "success": True,
@@ -240,15 +255,16 @@ class MCPServer:
         if not technique_id:
             return {"success": False, "error": "No technique_id provided"}
         
-        technique = mitre_framework.get_technique_by_id(technique_id)
-        
+        framework = get_mitre_framework()
+        technique = framework.get_technique_by_id(technique_id)
+
         if not technique:
             return {"success": False, "error": f"Technique {technique_id} not found"}
-        
+
         # Get associated tactics
         tactics = []
         for tactic_id in technique.tactic_ids:
-            tactic = mitre_framework.get_tactic_by_id(tactic_id)
+            tactic = framework.get_tactic_by_id(tactic_id)
             if tactic:
                 tactics.append({
                     "id": tactic.id,
@@ -278,7 +294,8 @@ class MCPServer:
         if not tactic_id:
             return {"success": False, "error": "No tactic_id provided"}
         
-        techniques = mitre_framework.get_techniques_by_tactic(tactic_id)
+        framework = get_mitre_framework()
+        techniques = framework.get_techniques_by_tactic(tactic_id)
         
         if not techniques:
             return {"success": False, "error": f"No techniques found for tactic {tactic_id}"}
@@ -300,7 +317,8 @@ class MCPServer:
         return result
 
     async def list_all_tactics(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
-        tactics = mitre_framework.get_all_tactics()
+        framework = get_mitre_framework()
+        tactics = framework.get_all_tactics()
         
         result = {
             "success": True,
