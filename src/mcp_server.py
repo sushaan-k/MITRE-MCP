@@ -1,91 +1,102 @@
-"""
-MCP Server Simulation for Agentic AI Threat Intelligence
-Provides tools simulation for AI agents to interact with threat analysis capabilities
-"""
+#!/usr/bin/env python3
+
 import asyncio
 import json
+import sys
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from src.threat_analyzer import ThreatAnalyzer
-from src.mitre_attack import MitreAttackFramework
-from src.models import MCPToolRequest, MCPToolResponse
+from threat_analyzer import ThreatAnalyzer
+from mitre_attack import MitreAttackFramework
 
-
-# Configure logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("mcp-threat-intelligence")
+logger = logging.getLogger("mcp-server")
 
-# Initialize core components
 threat_analyzer = ThreatAnalyzer()
 mitre_framework = MitreAttackFramework()
 
 
-class MCPThreatIntelligenceServer:
-    """
-    Simulated MCP Server for Threat Intelligence
-    This demonstrates how the actual MCP server would work
-    """
-    
+class MCPServer:
     def __init__(self):
-        self.tools = self._define_tools()
+        self.tools = self._get_tools()
         
-    def _define_tools(self) -> List[Dict[str, Any]]:
-        """Define available tools for AI agents"""
+    def _get_tools(self) -> List[Dict[str, Any]]:
         return [
             {
                 "name": "analyze_threat_report",
-                "description": "Analyze a threat intelligence report and map it to MITRE ATT&CK framework",
-                "parameters": {
-                    "content": {"type": "string", "required": True, "description": "Raw threat intelligence report content"},
-                    "source": {"type": "string", "required": False, "description": "Source of the threat intelligence", "default": "Unknown"}
+                "description": "Analyze threat intelligence reports and map to MITRE ATT&CK framework",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "content": {"type": "string", "description": "Raw threat intelligence content"},
+                        "source": {"type": "string", "description": "Source of the threat intelligence", "default": "Unknown"}
+                    },
+                    "required": ["content"]
                 }
             },
             {
-                "name": "search_mitre_techniques", 
+                "name": "search_mitre_techniques",
                 "description": "Search MITRE ATT&CK techniques by keywords",
-                "parameters": {
-                    "keywords": {"type": "array", "required": True, "description": "Keywords to search for in techniques"},
-                    "min_confidence": {"type": "number", "required": False, "description": "Minimum confidence score", "default": 0.3}
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "keywords": {"type": "array", "items": {"type": "string"}, "description": "Keywords to search for"},
+                        "min_confidence": {"type": "number", "description": "Minimum confidence score", "default": 0.3}
+                    },
+                    "required": ["keywords"]
                 }
             },
             {
                 "name": "get_mitre_tactic_details",
                 "description": "Get detailed information about a specific MITRE ATT&CK tactic",
-                "parameters": {
-                    "tactic_id": {"type": "string", "required": True, "description": "MITRE ATT&CK Tactic ID (e.g., TA0001)"}
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tactic_id": {"type": "string", "description": "MITRE ATT&CK Tactic ID (e.g., TA0001)"}
+                    },
+                    "required": ["tactic_id"]
                 }
             },
             {
                 "name": "get_mitre_technique_details",
-                "description": "Get detailed information about a specific MITRE ATT&CK technique", 
-                "parameters": {
-                    "technique_id": {"type": "string", "required": True, "description": "MITRE ATT&CK Technique ID (e.g., T1059)"}
+                "description": "Get detailed information about a specific MITRE ATT&CK technique",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "technique_id": {"type": "string", "description": "MITRE ATT&CK Technique ID (e.g., T1059)"}
+                    },
+                    "required": ["technique_id"]
                 }
             },
             {
                 "name": "get_techniques_by_tactic",
                 "description": "Get all techniques associated with a specific tactic",
-                "parameters": {
-                    "tactic_id": {"type": "string", "required": True, "description": "MITRE ATT&CK Tactic ID (e.g., TA0001)"}
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "tactic_id": {"type": "string", "description": "MITRE ATT&CK Tactic ID (e.g., TA0001)"}
+                    },
+                    "required": ["tactic_id"]
                 }
             },
             {
-                "name": "list_all_tactics", 
+                "name": "list_all_tactics",
                 "description": "List all MITRE ATT&CK tactics",
-                "parameters": {}
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "additionalProperties": False
+                }
             }
         ]
     
     async def list_tools(self) -> List[Dict[str, Any]]:
-        """List available tools"""
         return self.tools
-    
+
     async def call_tool(self, name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
-        """Handle tool calls from AI agents"""
         try:
-            logger.info(f"Tool called: {name} with arguments: {arguments}")
-            
+            logger.info(f"Tool called: {name}")
+
             if name == "analyze_threat_report":
                 return await self.analyze_threat_report(arguments)
             elif name == "search_mitre_techniques":
@@ -100,7 +111,7 @@ class MCPThreatIntelligenceServer:
                 return await self.list_all_tactics(arguments)
             else:
                 raise ValueError(f"Unknown tool: {name}")
-                
+
         except Exception as e:
             logger.error(f"Error in tool {name}: {str(e)}")
             return {
@@ -289,7 +300,6 @@ class MCPThreatIntelligenceServer:
         return result
 
     async def list_all_tactics(self, arguments: Dict[str, Any]) -> Dict[str, Any]:
-        """List all MITRE ATT&CK tactics"""
         tactics = mitre_framework.get_all_tactics()
         
         result = {
@@ -308,78 +318,40 @@ class MCPThreatIntelligenceServer:
 
 
 # Create server instance
-mcp_server = MCPThreatIntelligenceServer()
+mcp_server = MCPServer()
 
 
-async def demo_mcp_interaction():
-    """Demonstrate MCP server interaction"""
-    print("🤖 MCP Threat Intelligence Server Demo")
-    print("="*50)
-    
-    # List tools
-    print("\n📚 Available Tools:")
-    tools = await mcp_server.list_tools()
-    for i, tool in enumerate(tools, 1):
-        print(f"  {i}. {tool['name']}: {tool['description']}")
-    
-    # Demo threat analysis
-    print("\n🔬 Demo: Analyzing Sample Threat")
-    sample_threat = """
-    MALWARE ALERT: PowerShell-based attack detected
-    
-    A suspicious PowerShell script was observed executing on multiple endpoints.
-    The script appears to be performing credential dumping and establishing
-    persistence through scheduled tasks.
-    
-    IOCs:
-    - Hash: a1b2c3d4e5f6789
-    - Command: powershell.exe -enc <base64>
-    - IP: 192.168.1.100
-    """
-    
-    result = await mcp_server.call_tool("analyze_threat_report", {
-        "content": sample_threat,
-        "source": "Security Team"
-    })
-    
-    if result.get("success"):
-        print(f"  ✅ Analysis completed!")
-        print(f"  📊 Risk Score: {result['risk_score']:.1f}/10")
-        print(f"  🎯 Indicators: {result['report']['indicators_count']}")
-        print(f"  🗺️ MITRE Mappings: {len(result['mitre_mappings'])}")
+async def handle_mcp_request(request):
+    method = request.get("method")
+    params = request.get("params", {})
+
+    if method == "tools/list":
+        tools = await mcp_server.list_tools()
+        return {"tools": tools}
+    elif method == "tools/call":
+        tool_name = params.get("name")
+        arguments = params.get("arguments", {})
+        result = await mcp_server.call_tool(tool_name, arguments)
+        return {"content": [{"type": "text", "text": str(result)}]}
     else:
-        print(f"  ❌ Error: {result.get('error')}")
-    
-    # Demo technique search
-    print("\n🔍 Demo: Searching for 'powershell' techniques")
-    search_result = await mcp_server.call_tool("search_mitre_techniques", {
-        "keywords": ["powershell", "script"],
-        "min_confidence": 0.5
-    })
-    
-    if search_result.get("success"):
-        print(f"  ✅ Found {search_result['results_count']} matching techniques")
-        for tech in search_result["results"][:3]:
-            print(f"    • {tech['technique_id']}: {tech['name']} (confidence: {tech['confidence']:.2f})")
-    else:
-        print(f"  ❌ Error: {search_result.get('error')}")
+        return {"error": f"Unknown method: {method}"}
 
 
 def main():
-    """Main entry point"""
-    print("🛡️ MCP Threat Intelligence Server")
-    print("This simulates how the actual MCP server would work with AI agents")
-    print()
-    
-    # Run demo
-    asyncio.run(demo_mcp_interaction())
-    
-    print("\n" + "="*50)
-    print("💡 Integration Notes:")
-    print("• AI agents would call these tools via the MCP protocol")
-    print("• Each tool returns structured data for further processing")
-    print("• The server maintains state and can handle multiple requests")
-    print("• Real MCP integration would use stdin/stdout communication")
+    import json
+    import sys
+
+    # Simple MCP server implementation
+    for line in sys.stdin:
+        try:
+            request = json.loads(line.strip())
+            response = asyncio.run(handle_mcp_request(request))
+            print(json.dumps(response))
+            sys.stdout.flush()
+        except Exception as e:
+            error_response = {"error": str(e)}
+            print(json.dumps(error_response))
+            sys.stdout.flush()
 
 
 if __name__ == "__main__":

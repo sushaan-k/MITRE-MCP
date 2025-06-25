@@ -1,41 +1,30 @@
-"""
-MITRE ATT&CK Framework Integration
-"""
 import json
 import sqlite3
-import requests
-from typing import List, Dict, Optional, Tuple
+from typing import List, Optional, Tuple
 from pathlib import Path
 import logging
 from src.models import AttackTactic, AttackTechnique
 
 
 class MitreAttackFramework:
-    """
-    MITRE ATT&CK Framework integration class
-    Handles loading, querying, and mapping threat data to ATT&CK framework
-    """
-    
+
     def __init__(self, db_path: str = "data/mitre_attack.db"):
         self.db_path = db_path
         self.logger = logging.getLogger(__name__)
         self._ensure_database()
-        
+
     def _ensure_database(self):
-        """Ensure the MITRE ATT&CK database exists and is populated"""
         db_dir = Path(self.db_path).parent
         db_dir.mkdir(parents=True, exist_ok=True)
-        
+
         if not Path(self.db_path).exists():
             self._initialize_database()
             self._populate_database()
     
     def _initialize_database(self):
-        """Initialize the SQLite database schema"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        
-        # Create tactics table
+
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS tactics (
                 id TEXT PRIMARY KEY,
@@ -45,21 +34,19 @@ class MitreAttackFramework:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
-        # Create techniques table
+
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS techniques (
                 id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
                 description TEXT,
-                platforms TEXT,  -- JSON array
-                data_sources TEXT,  -- JSON array
-                mitigations TEXT,  -- JSON array
+                platforms TEXT,
+                data_sources TEXT,
+                mitigations TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
-        # Create technique-tactic relationships
+
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS technique_tactics (
                 technique_id TEXT,
@@ -69,8 +56,7 @@ class MitreAttackFramework:
                 FOREIGN KEY (tactic_id) REFERENCES tactics (id)
             )
         """)
-        
-        # Create sub-techniques table
+
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS sub_techniques (
                 id TEXT PRIMARY KEY,
@@ -80,17 +66,14 @@ class MitreAttackFramework:
                 FOREIGN KEY (parent_technique_id) REFERENCES techniques (id)
             )
         """)
-        
-        # Create indexes for better performance
+
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_technique_name ON techniques (name)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_tactic_name ON tactics (name)")
-        
+
         conn.commit()
         conn.close()
     
     def _populate_database(self):
-        """Populate database with sample MITRE ATT&CK data"""
-        # Sample tactics data
         tactics_data = [
             {
                 "id": "TA0001",
@@ -165,8 +148,7 @@ class MitreAttackFramework:
                 "external_id": "TA0040"
             }
         ]
-        
-        # Sample techniques data
+
         techniques_data = [
             {
                 "id": "T1059",
@@ -211,54 +193,50 @@ class MitreAttackFramework:
                 "platforms": ["Windows", "Linux", "macOS"],
                 "data_sources": ["Command", "Process"],
                 "mitigations": [],
-                "tactics": ["TA0007"]  # Discovery
+                "tactics": ["TA0007"]
             }
         ]
-        
+
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        
-        # Insert tactics
+
         for tactic in tactics_data:
             cursor.execute("""
                 INSERT OR REPLACE INTO tactics (id, name, description, external_id)
                 VALUES (?, ?, ?, ?)
             """, (tactic["id"], tactic["name"], tactic["description"], tactic["external_id"]))
-        
-        # Insert techniques
+
         for technique in techniques_data:
             cursor.execute("""
                 INSERT OR REPLACE INTO techniques (id, name, description, platforms, data_sources, mitigations)
                 VALUES (?, ?, ?, ?, ?, ?)
             """, (
                 technique["id"],
-                technique["name"], 
+                technique["name"],
                 technique["description"],
                 json.dumps(technique["platforms"]),
                 json.dumps(technique["data_sources"]),
                 json.dumps(technique["mitigations"])
             ))
-            
-            # Insert technique-tactic relationships
+
             for tactic_id in technique["tactics"]:
                 cursor.execute("""
                     INSERT OR REPLACE INTO technique_tactics (technique_id, tactic_id)
                     VALUES (?, ?)
                 """, (technique["id"], tactic_id))
-        
+
         conn.commit()
         conn.close()
         self.logger.info("MITRE ATT&CK database populated with sample data")
     
     def get_all_tactics(self) -> List[AttackTactic]:
-        """Retrieve all tactics from the database"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        
+
         cursor.execute("SELECT id, name, description, external_id FROM tactics ORDER BY id")
         rows = cursor.fetchall()
         conn.close()
-        
+
         return [
             AttackTactic(
                 id=row[0],
@@ -267,12 +245,11 @@ class MitreAttackFramework:
                 external_id=row[3] or ""
             ) for row in rows
         ]
-    
+
     def get_all_techniques(self) -> List[AttackTechnique]:
-        """Retrieve all techniques from the database"""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        
+
         cursor.execute("""
             SELECT t.id, t.name, t.description, t.platforms, t.data_sources, t.mitigations,
                    GROUP_CONCAT(tt.tactic_id) as tactic_ids
@@ -283,7 +260,7 @@ class MitreAttackFramework:
         """)
         rows = cursor.fetchall()
         conn.close()
-        
+
         techniques = []
         for row in rows:
             tactic_ids = row[6].split(",") if row[6] else []
@@ -296,25 +273,22 @@ class MitreAttackFramework:
                 data_sources=json.loads(row[4]) if row[4] else [],
                 mitigations=json.loads(row[5]) if row[5] else []
             ))
-        
+
         return techniques
     
     def search_techniques_by_keywords(self, keywords: List[str]) -> List[Tuple[AttackTechnique, float]]:
-        """Search techniques by keywords and return with confidence scores"""
         techniques = self.get_all_techniques()
         results = []
-        
+
         for technique in techniques:
             score = self._calculate_keyword_match_score(technique, keywords)
             if score > 0:
                 results.append((technique, score))
-        
-        # Sort by confidence score (descending)
+
         results.sort(key=lambda x: x[1], reverse=True)
         return results
-    
+
     def _calculate_keyword_match_score(self, technique: AttackTechnique, keywords: List[str]) -> float:
-        """Calculate confidence score for technique-keyword matching"""
         text_fields = [
             technique.name.lower(),
             technique.description.lower(),
@@ -322,45 +296,40 @@ class MitreAttackFramework:
             " ".join(technique.data_sources).lower(),
             " ".join(technique.mitigations).lower()
         ]
-        
+
         full_text = " ".join(text_fields)
-        
+
         keyword_matches = 0
         total_keywords = len(keywords)
-        
+
         for keyword in keywords:
             if keyword.lower() in full_text:
                 keyword_matches += 1
-        
-        # Calculate basic score based on keyword matches
+
         if total_keywords == 0:
             return 0.0
-        
+
         base_score = keyword_matches / total_keywords
-        
-        # Boost score for exact name matches
+
         if any(keyword.lower() in technique.name.lower() for keyword in keywords):
             base_score *= 1.5
-        
+
         return min(base_score, 1.0)
     
     def get_technique_by_id(self, technique_id: str) -> Optional[AttackTechnique]:
-        """Get a specific technique by ID"""
         techniques = self.get_all_techniques()
         for technique in techniques:
             if technique.id == technique_id:
                 return technique
         return None
-    
+
     def get_tactic_by_id(self, tactic_id: str) -> Optional[AttackTactic]:
-        """Get a specific tactic by ID"""
         tactics = self.get_all_tactics()
         for tactic in tactics:
             if tactic.id == tactic_id:
                 return tactic
         return None
-    
+
     def get_techniques_by_tactic(self, tactic_id: str) -> List[AttackTechnique]:
-        """Get all techniques associated with a specific tactic"""
         techniques = self.get_all_techniques()
         return [tech for tech in techniques if tactic_id in tech.tactic_ids]

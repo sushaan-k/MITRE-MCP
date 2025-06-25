@@ -1,37 +1,24 @@
-"""
-Web Interface for MCP Agentic AI Threat Intelligence
-FastAPI-based web interface for threat analysis and visualization
-"""
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-import json
-import uvicorn
 from datetime import datetime
+import uvicorn
 
-from src.threat_analyzer import ThreatAnalyzer
-from src.mitre_attack import MitreAttackFramework
-from src.models import ThreatAnalysis
+from threat_analyzer import ThreatAnalyzer
+from mitre_attack import MitreAttackFramework
 
-
-# Initialize FastAPI app
 app = FastAPI(
-    title="MCP Threat Intelligence API",
-    description="Agentic AI system for mapping cyber threats to MITRE ATT&CK framework",
+    title="MITRE MCP Threat Intelligence API",
+    description="Threat intelligence framework with MITRE ATT&CK mapping",
     version="1.0.0"
 )
 
-# Initialize core components
 threat_analyzer = ThreatAnalyzer()
 mitre_framework = MitreAttackFramework()
-
-# Templates for HTML rendering
 templates = Jinja2Templates(directory="templates")
 
-# Request/Response models
 class ThreatAnalysisRequest(BaseModel):
     content: str
     source: Optional[str] = "Web Interface"
@@ -253,23 +240,21 @@ async def health_check() -> Dict[str, str]:
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now().isoformat(),
         "version": "1.0.0"
     }
 
 
 def main():
-    """Run the web interface"""
-    print("Starting MCP Threat Intelligence Web Interface...")
-    print("Access the interface at: http://localhost:8000")
-    print("API documentation at: http://localhost:8000/docs")
-    
+    print("Starting MITRE MCP Web Interface...")
+    print("Server: http://localhost:8000")
+    print("API Docs: http://localhost:8000/docs")
+
     uvicorn.run(
-        "src.web_interface:app",
+        "web_interface:app",
         host="0.0.0.0",
         port=8000,
-        reload=True,
-        log_level="info"
+        reload=True
     )
 
 
