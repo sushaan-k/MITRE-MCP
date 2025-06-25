@@ -1,0 +1,21 @@
+runtime: "npm"
+startCommand:
+  type: "stdio"
+  command: "npx"
+  args: ["mitre-mcp", "start"]
+configSchema:
+  type: object
+  properties:
+    apiKey:
+      type: string
+      description: "Optional API key for enhanced security"
+      default: ""
+    logLevel:
+      type: string
+      description: "Logging level"
+      enum: ["DEBUG", "INFO", "WARNING", "ERROR"]
+      default: "INFO"
+  required: []
+exampleConfig:
+  apiKey: ""
+  logLevel: "INFO"
