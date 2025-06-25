@@ -3,47 +3,5 @@ version: 1.0.0
 description: Threat intelligence framework with MITRE ATT&CK mapping
 
 server:
-  command: python3
+  command: python
   args: ["mcp_server.py"]
-
-build:
-  dockerfile: Dockerfile
-  context: "."
-
-config:
-  database_path:
-    type: string
-    default: "data/mitre_attack.db"
-    description: "Path to MITRE ATT&CK database"
-
-  log_level:
-    type: string
-    default: "INFO"
-    enum: ["DEBUG", "INFO", "WARNING", "ERROR"]
-    description: "Logging level"
-
-  confidence_threshold:
-    type: number
-    default: 0.3
-    minimum: 0.0
-    maximum: 1.0
-    description: "Minimum confidence threshold for MITRE mappings"
-
-tools:
-  - name: analyze_threat_report
-    description: Analyze threat intelligence reports and map to MITRE ATT&CK framework
-
-  - name: search_mitre_techniques
-    description: Search MITRE ATT&CK techniques by keywords
-
-  - name: get_mitre_tactic_details
-    description: Get detailed information about a specific MITRE ATT&CK tactic
-
-  - name: get_mitre_technique_details
-    description: Get detailed information about a specific MITRE ATT&CK technique
-
-  - name: get_techniques_by_tactic
-    description: Get all techniques associated with a specific tactic
-
-  - name: list_all_tactics
-    description: List all MITRE ATT&CK tactics
