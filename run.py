@@ -10,13 +10,13 @@ def main():
         print("  mcp  - Start MCP server")
         print("  test - Run tests")
         return
-    
+
     command = sys.argv[1]
-    
+
     if command == "web":
-        subprocess.run([sys.executable, "src/web_interface.py"])
+        subprocess.run([sys.executable, "web_interface.py"])
     elif command == "mcp":
-        subprocess.run([sys.executable, "src/mcp_server.py"])
+        subprocess.run([sys.executable, "mcp_server.py"])
     elif command == "test":
         subprocess.run([sys.executable, "tests/test_basic.py"])
     else:

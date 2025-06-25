@@ -4,9 +4,9 @@
   "description": "Threat intelligence framework with MITRE ATT&CK mapping",
   "main": "index.js",
   "scripts": {
-    "start": "python3 run.py web",
-    "mcp": "python3 run.py mcp",
-    "test": "python3 run.py test"
+    "start": "python3 web_interface.py",
+    "mcp": "python3 mcp_server.py",
+    "test": "python3 tests/test_basic.py"
   },
   "keywords": [
     "cybersecurity",

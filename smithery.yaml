@@ -4,13 +4,11 @@ description: Threat intelligence framework with MITRE ATT&CK mapping
 
 server:
   command: python3
-  args: ["src/mcp_server.py"]
-  env:
-    PYTHONPATH: "."
+  args: ["mcp_server.py"]
 
 build:
   dockerfile: Dockerfile
-  context: .
+  context: "."
 
 config:
   database_path:
