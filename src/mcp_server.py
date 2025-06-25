@@ -341,6 +341,8 @@ def main():
     import json
     import sys
 
+    logger.info("Starting MITRE MCP Server")
+
     # Simple MCP server implementation
     for line in sys.stdin:
         try:

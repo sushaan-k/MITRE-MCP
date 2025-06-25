@@ -4,11 +4,11 @@ import hashlib
 from typing import List, Dict, Any, Tuple
 from datetime import datetime
 import logging
-from src.models import (
+from models import (
     ThreatReport, ThreatIndicator, ThreatSeverity,
     AttackMapping, ThreatAnalysis
 )
-from src.mitre_attack import MitreAttackFramework
+from mitre_attack import MitreAttackFramework
 
 
 class ThreatAnalyzer:

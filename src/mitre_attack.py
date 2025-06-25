@@ -3,7 +3,7 @@ import sqlite3
 from typing import List, Optional, Tuple
 from pathlib import Path
 import logging
-from src.models import AttackTactic, AttackTechnique
+from models import AttackTactic, AttackTechnique
 
 
 class MitreAttackFramework:
