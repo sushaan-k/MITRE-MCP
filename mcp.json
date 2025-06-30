@@ -1,0 +1,157 @@
+{
+  "name": "mitre-mcp",
+  "version": "1.0.0",
+  "description": "Professional MCP server for threat intelligence analysis and MITRE ATT&CK framework integration",
+  "license": "MIT",
+  "author": "Development Team",
+  "homepage": "https://github.com/sushaan-k/mitre-mcp",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sushaan-k/mitre-mcp.git"
+  },
+  "mcp": {
+    "version": "1.0",
+    "protocol": "stdio",
+    "server": {
+      "command": "python3",
+      "args": ["mcp_server.py"],
+      "transport": "stdio"
+    },
+    "configSchema": {
+      "type": "object",
+      "properties": {
+        "database_path": {
+          "type": "string",
+          "description": "Path to MITRE ATT&CK database",
+          "default": "data/mitre_attack.db"
+        },
+        "log_level": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR"],
+          "description": "Logging level",
+          "default": "INFO"
+        },
+        "max_analysis_time": {
+          "type": "number",
+          "description": "Maximum analysis time in seconds",
+          "default": 30,
+          "minimum": 1,
+          "maximum": 300
+        },
+        "confidence_threshold": {
+          "type": "number",
+          "description": "Minimum confidence threshold for MITRE mappings",
+          "default": 0.3,
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    }
+  },
+  "tools": [
+    {
+      "name": "analyze_threat_report",
+      "description": "Analyze threat intelligence reports and map to MITRE ATT&CK framework",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "Raw threat intelligence content to analyze"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the threat intelligence",
+            "default": "Unknown"
+          }
+        },
+        "required": ["content"]
+      }
+    },
+    {
+      "name": "search_mitre_techniques",
+      "description": "Search MITRE ATT&CK techniques by keywords",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "keywords": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Keywords to search for in technique names and descriptions"
+          },
+          "min_confidence": {
+            "type": "number",
+            "description": "Minimum confidence threshold for results",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "default": 0.3
+          }
+        },
+        "required": ["keywords"]
+      }
+    },
+    {
+      "name": "get_mitre_tactic_details",
+      "description": "Get detailed information about a specific MITRE ATT&CK tactic",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tactic_id": {
+            "type": "string",
+            "description": "MITRE ATT&CK tactic ID (e.g., TA0001)",
+            "pattern": "^TA[0-9]{4}$"
+          }
+        },
+        "required": ["tactic_id"]
+      }
+    },
+    {
+      "name": "get_mitre_technique_details",
+      "description": "Get detailed information about a specific MITRE ATT&CK technique",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "technique_id": {
+            "type": "string",
+            "description": "MITRE ATT&CK technique ID (e.g., T1059)",
+            "pattern": "^T[0-9]{4}(\\.[0-9]{3})?$"
+          }
+        },
+        "required": ["technique_id"]
+      }
+    },
+    {
+      "name": "get_techniques_by_tactic",
+      "description": "Get all techniques associated with a specific tactic",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "tactic_id": {
+            "type": "string",
+            "description": "MITRE ATT&CK tactic ID (e.g., TA0001)",
+            "pattern": "^TA[0-9]{4}$"
+          }
+        },
+        "required": ["tactic_id"]
+      }
+    },
+    {
+      "name": "list_all_tactics",
+      "description": "List all MITRE ATT&CK tactics",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      }
+    }
+  ],
+  "keywords": [
+    "cybersecurity",
+    "threat-intelligence",
+    "mitre-attack",
+    "security-analysis"
+  ],
+  "engines": {
+    "python": ">=3.8"
+  }
+}
